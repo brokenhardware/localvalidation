@@ -35,7 +35,7 @@
             return hash;
         }
 
-async function sha256(str) {
+function sha256(str) {
     const encoder = new TextEncoder();
     const data = encoder.encode(str);
     
