@@ -28,8 +28,10 @@
 
         function isValidSecret(derivedSecret) {
             const hash = sha256(derivedSecret).then(h => {
+                 consle.log(hash);
                 return h.endsWith('a1');
             });
+            consle.log(hash);
             return hash;
         }
 
