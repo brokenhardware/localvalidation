@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Validator</title>
+    <script>
+        function validate() {
+            const publicValue = window.location.hash.substring(1);
+            if (!publicValue) {
+                document.getElementById('result').textContent = "Missing value";
+                return;
+            }
+
+            const derivedSecret = deriveSecret(publicValue);
+
+            if (isValidSecret(derivedSecret)) {
+                document.getElementById('result').textContent = "✓ True value!";
+            } else {
+                document.getElementById('result').textContent = "✗ False value";
+            }
+        }
+
+        function deriveSecret(publicValue) {
+            return publicValue.split('')
+                .map(c => String.fromCharCode((c.charCodeAt(0) + 5) % 256))
+                .join('')
+                .substring(0, 8);
+        }
+
+        function isValidSecret(derivedSecret) {
+            const hash = sha256(derivedSecret).then(h => {
+                return h.endsWith('a1');
+            });
+            return hash;
+        }
+
+async function sha256(str) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(str);
+    
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    
+    return hashHex;
+}
+
+        window.onload = validate;
+    </script>
+</head>
+<body>
+    <div id="result">Check...</div>
+</body>
+</html>
