@@ -3,7 +3,7 @@
 <head>
     <title>Validator</title>
     <script>
-        function validate() {
+        async function validate() {
             const publicValue = window.location.hash.substring(1);
             if (!publicValue) {
                 document.getElementById('result').textContent = "Missing value";
@@ -12,7 +12,9 @@
 
             const derivedSecret = deriveSecret(publicValue);
 
-            if (isValidSecret(derivedSecret)) {
+            const isValid = await isValidSecret(derivedSecret);
+
+            if (isValid) {
                 document.getElementById('result').textContent = "✓ True value!";
             } else {
                 document.getElementById('result').textContent = "✗ False value";
@@ -26,26 +28,24 @@
                 .substring(0, 8);
         }
 
-        function isValidSecret(derivedSecret) {
-            const hash = sha256(derivedSecret).then(h => {
-                 console.log(hash);
-                return h.endsWith('a1');
-            });
-            console.log(hash);
-            return hash;
+        async function isValidSecret(secret) {
+            try {
+                const hash = await sha256(secret);
+                console.log("Hash:", hash);
+                return hash.endsWith('a1');
+            } catch (error) {
+                console.error("Hashing error:", error);
+                return false;
+            }
         }
 
-async function sha256(str) {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(str);
-    
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    
-    return hashHex;
-}
+        async function sha256(str) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(str);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
 
         window.onload = validate;
     </script>
